@@ -1,0 +1,35 @@
+{
+    "options": {
+       "cwd": "${workspaceFolder}/build"
+    },
+    "tasks": [
+       {//这个大括号里是‘构建’任务
+          "label": "cmake", //任务名称，可以更改，不过不建议改
+          "type": "shell", // 任务类型，process是vsc把预定义变量和转义解析后直接全部传给command；shell相当于先打开shell再输入命令，所以args还会经过shell再解析一遍  
+          "command":"cmake", // 编译命令，这里使用的是cmake，也可以是g++，c++
+          "args": [".."] //编译命令的参数
+       },
+       {
+          "label": "make",
+          "command":"make",
+       },
+       {
+          "label": "CMake Build",
+          "dependsOn":[ //任务依赖，因为要运行必须先构建，所以执行这个任务前必须先执行cmake和make任务.
+             "cmake",
+             "make"
+          ],
+          "group": { //group表示‘组’，我们可以有很多的task，然后把他们放在一个‘组’里  
+            "kind": "build",//表示这一组任务类型是构建
+            "isDefault": true, //表示这个任务是当前这组任务中的默认任务crt+shift+B
+        },
+        "presentation": { //执行这个任务时的一些其他设定
+            "panel": "shared", //默认为“shared“表示共享，改成new之后每个进程创建新的端口
+            "echo": true,//表示在执行任务时在终端要有输出
+            "focus": true,//设为true后可以使执行task时焦点聚集在终端，但对编译来说，设为true没有意义，因为运行的时候才涉及到输入
+            "reveal": "always", //执行任务时是否跳转到终端面板，可以为always，silent，never
+            }
+       }
+    ],
+    "version": "2.0.0"
+ }
