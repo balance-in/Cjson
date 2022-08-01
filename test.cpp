@@ -62,6 +62,11 @@ static void test_parse_string(){
 #endif
 }
 
+static void test_parse_missing_quotation_mark(){
+    TEST_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK, "\"");
+    TEST_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK, "\"abc");
+}
+
 static void test_parse_null(){
     lept_value v;
     v.type = LEPT_TRUE;
