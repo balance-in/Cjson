@@ -124,7 +124,8 @@ static int lept_parse_value(lept_context *c, lept_value *v){
         case 'n': return lept_parse_literal(c, v, "null", LEPT_NULL);
         case 'f': return lept_parse_literal(c, v, "false", LEPT_FALSE);
         case 't': return lept_parse_literal(c, v, "true", LEPT_TRUE);
-        default: return lept_parse_number(c, v);
+        default : return lept_parse_number(c, v);
+        case '"' : return lept_parse_string(c, v);
         case '\0': return LEPT_PARSE_EXPECT_VALUE;
     }
 }
@@ -160,6 +161,11 @@ double lept_get_number(const lept_value *v){
     assert(v != NULL && v->type == LEPT_NUMBER);
     return v->n;
 }
+void lept_set_number(lept_value *v, double n){
+    lept_free(v);
+    v->n = n;
+    v->type = LEPT_NUMBER;
+}
 void lept_set_string(lept_value *v, const char *s, size_t len){
     assert(v != NULL && (s != NULL || len == 0));
     lept_free(v);
@@ -183,4 +189,12 @@ size_t lept_get_string_length(const lept_value *v){
 const char *lept_get_string(const lept_value *v){
     assert(v != NULL && v->type == LEPT_STRING);
     return v->s;
+}
+int lept_get_boolean(const lept_value *v){
+    assert(v != NULL && (v->type == LEPT_TRUE || v->type == LEPT_FALSE));
+    return v->type == LEPT_TRUE;
+}
+void lept_set_boolean(lept_value *v, int b){
+    lept_free(v);
+    v->type = b ? LEPT_TRUE : LEPT_FALSE;
 }

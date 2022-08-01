@@ -67,6 +67,22 @@ static void test_parse_missing_quotation_mark(){
     TEST_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK, "\"abc");
 }
 
+static void test_parse_invalid_string_escape(){
+#if 0
+    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\v\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\'\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\0\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\x12\"");
+#endif
+}
+
+static void test_parse_invalid_string_char(){
+#if 0
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x01\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\01F\"");
+#endif
+}
+
 static void test_parse_null(){
     lept_value v;
     v.type = LEPT_TRUE;
@@ -169,16 +185,38 @@ static void test_access_string(){
     EXPECT_EQ_STRING("", lept_get_string(&v), lept_get_string_length(&v));
 }
 
+static void test_access_boolean(){
+    lept_value v;
+    lept_init(&v);
+    lept_set_boolean(&v, 1);
+    EXPECT_TRUE(lept_get_boolean(&v));
+    lept_init(&v);
+    lept_set_boolean(&v, 0);
+    EXPECT_FALSE(lept_get_boolean(&v));
+}
+
+static void test_access_number(){
+    lept_value v;
+    lept_init(&v);
+    lept_set_number(&v, 20);
+    EXPECT_EQ_INT(20, lept_get_number(&v));
+}
+
 static void test_parse(){
     test_parse_null();
     test_parse_true();
     test_parse_false();
+    test_parse_string();
     test_parse_expect_value();
     test_parse_invalid_value();
     test_parse_root_not_singular();
     test_parse_number();
     test_parse_number_too_big();
     test_access_string();
+    test_access_boolean();
+    test_access_number();
+    test_parse_invalid_string_escape();
+    test_parse_invalid_string_char();
 }
 
 int main(){
