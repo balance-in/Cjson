@@ -56,8 +56,14 @@ static int test_pass = 0;
 static void test_parse_string(){
     TEST_STRING("", "\"\"");
     TEST_STRING("Hello", "\"Hello\"");
-#if 0
-    TEST_STRING("Hello\nWorld", "\"Hello\nWorld\"");
+    TEST_STRING("Hello\0World", "\"Hello\\u0000World\"");
+    TEST_STRING("\x24", "\"\\u0024\"");         /* Dollar sign U+0024 */
+    TEST_STRING("\xC2\xA2", "\"\\u00A2\"");     /* Cents sign U+00A2 */
+    TEST_STRING("\xE2\x82\xAC", "\"\\u20AC\""); /* Euro sign U+20AC */
+    TEST_STRING("\xF0\x9D\x84\x9E", "\"\\uD834\\uDD1E\"");  /* G clef sign U+1D11E */
+    TEST_STRING("\xF0\x9D\x84\x9E", "\"\\ud834\\udd1e\"");  /* G clef sign U+1D11E */
+#if 1
+    TEST_STRING("Hello\nWorld", "\"Hello\\nWorld\"");
     TEST_STRING("\" \\ / \b \f \n \r \t", "\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"");
 #endif
 }
@@ -68,16 +74,16 @@ static void test_parse_missing_quotation_mark(){
 }
 
 static void test_parse_invalid_string_escape(){
-#if 0
-    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\v\"");
-    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\'\"");
-    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\0\"");
-    TEST_ERROR(LEPT_PARSE_INVALID_VALUE, "\"\\x12\"");
+#if 1
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\v\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\'\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\0\"");
+    TEST_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE, "\"\\x12\"");
 #endif
 }
 
 static void test_parse_invalid_string_char(){
-#if 0
+#if 1
     TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\x01\"");
     TEST_ERROR(LEPT_PARSE_INVALID_STRING_CHAR, "\"\01F\"");
 #endif
@@ -183,11 +189,13 @@ static void test_access_string(){
     lept_init(&v);
     lept_set_string(&v, "", 0);
     EXPECT_EQ_STRING("", lept_get_string(&v), lept_get_string_length(&v));
+    lept_free(&v);
 }
 
 static void test_access_boolean(){
     lept_value v;
     lept_init(&v);
+    lept_set_string(&v, "a", 1);
     lept_set_boolean(&v, 1);
     EXPECT_TRUE(lept_get_boolean(&v));
     lept_init(&v);
@@ -198,6 +206,7 @@ static void test_access_boolean(){
 static void test_access_number(){
     lept_value v;
     lept_init(&v);
+    lept_set_string(&v, "a", 1);
     lept_set_number(&v, 20);
     EXPECT_EQ_INT(20, lept_get_number(&v));
 }
