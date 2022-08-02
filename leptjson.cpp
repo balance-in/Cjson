@@ -60,8 +60,26 @@ static int lept_parse_literal(lept_context *c, lept_value *v, const char *litert
     return LEPT_PARSE_OK;
 }
 
+#define STRING_ERROR(ret) do{ c->top = head; return ret;} while(0)
+
+static const char *lept_parse_hex4(const char *p, unsigned *u){
+    *u = 0;
+    for(int i = 3;i >= 0;i--){
+        unsigned ch = *p++;
+        if (ISDIGIT(ch)) *u += ((ch - 48) << (i * 4));
+        else if (ISHEX(ch)) *u += ((ch - 86) << (i * 4));
+        else return NULL;
+    }
+    return p;
+}
+
+static void lept_encode_utf8(lept_context *c, unsigned u){
+    
+}
+
 static int lept_parse_string(lept_context *c, lept_value *v){
     size_t head = c->top, len;
+    unsigned u;
     const char *p;
     EXPECT(c, '\"');
     p = c->json;
@@ -74,8 +92,7 @@ static int lept_parse_string(lept_context *c, lept_value *v){
                 c->json = p;
                 return LEPT_PARSE_OK;
             case '\0':
-                c->top = head;
-                return LEPT_PARSE_MISS_QUOTATION_MARK;
+                STRING_ERROR(LEPT_PARSE_MISS_QUOTATION_MARK);
             case '\\':
                 switch(*p++){
                     case 'b' : PUTC(c, '\b');break;
@@ -86,13 +103,19 @@ static int lept_parse_string(lept_context *c, lept_value *v){
                     case '/' : PUTC(c, '/');break;
                     case '\\': PUTC(c, '\\');break;
                     case '\"': PUTC(c, '\"');break;
-                    default : c->top = head;  return LEPT_PARSE_INVALID_STRING_ESCAPE;
+                    case 'u' :
+                        if (!(p = lept_parse_hex4(p, &u))){
+                            STRING_ERROR(LEPT_PARSE_INVALID_UNICODE_HEX);
+                        }
+                        lept_encode_utf8(c,u);
+                        break;
+
+                    default : STRING_ERROR(LEPT_PARSE_INVALID_STRING_ESCAPE);
                 }
                 break;
             default:
                 if((unsigned char)ch < 0x20){
-                    c->top = head;
-                    return LEPT_PARSE_INVALID_STRING_CHAR;
+                    STRING_ERROR(LEPT_PARSE_INVALID_STRING_CHAR);
                 }
                 PUTC(c, ch);
         }

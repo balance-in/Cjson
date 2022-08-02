@@ -5,6 +5,7 @@
 
 #define ISDIGIT(ch)      ((ch) >= '0' && (ch) <= '9')
 #define ISDIGIT1TO9(ch)  ((ch) >= '1' && (ch) <= '9')
+#define ISHEX(ch)        ((ch) >= 'a' && (ch) <= 'e')
 
 typedef enum {LEPT_NULL, LEPT_FALSE, LEPT_TRUE, LEPT_NUMBER, LEPT_STRING, LEPT_ARRAY, LEPT_OBJECT} lept_type;
 
@@ -27,7 +28,8 @@ enum {
     LEPT_PARSE_NUMBER_TOO_BIG,
     LEPT_PARSE_MISS_QUOTATION_MARK,
     LEPT_PARSE_INVALID_STRING_CHAR,
-    LEPT_PARSE_INVALID_STRING_ESCAPE
+    LEPT_PARSE_INVALID_STRING_ESCAPE,
+    LEPT_PARSE_INVALID_UNICODE_HEX
 };
 
 #define lept_init(v) do {(v)->type = LEPT_NULL;} while(0)
