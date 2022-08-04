@@ -7,7 +7,7 @@
 
 #define EXPECT(c, ch) do { assert(*c->json == (ch)); c->json++;} while(0)
 #define PUTC(c, ch) do {*(char*)lept_context_push(c, sizeof(char)) = (ch);} while(0)
-
+#define PUTS(c, s, len) memcpy(lept_context_push(c, len), s, len);
 
 typedef struct{
     const char* json;
@@ -19,6 +19,10 @@ static int lept_parse_value(lept_context *c, lept_value *v);//前向声明
 
 #ifndef LEPT_PARSE_STACK_INIT_SIZE
 #define LEPT_PARSE_STACK_INIT_SIZE 256
+#endif
+
+#ifndef LEPT_PARSE_STRINGIFY_INIT_SIZE
+#define LEPT_PARSE_STRINGIFY_INIT_SIZE 256
 #endif
 
 static void *lept_context_push(lept_context *c, size_t size){
@@ -344,6 +348,32 @@ int lept_parse(lept_value *v, const char *json){
     assert(c.top == 0);
     free(c.stack);
     return res;
+}
+
+static void lept_stringify_value(lept_context *c, const lept_value *v){
+    switch (v->type){
+        case LEPT_NULL: PUTS(c, "null", 4); break;
+        case LEPT_FALSE: PUTS(c, "false", 5); break;
+        case LEPT_TRUE: PUTS(c, "true", 4); break;
+        case LEPT_NUMBER: c->top -= 32 - sprintf(lept_context_push(c, 32), "%.17g", v->n);
+    
+    default:
+        break;
+    }
+}
+
+
+char *lept_stringify(const lept_value *v, size_t *length){
+    lept_context c;
+    assert(v != NULL);
+    c.stack = (char*)malloc(c.size = LEPT_PARSE_STRINGIFY_INIT_SIZE);
+    c.top = 0;
+    lept_stringify_value(&c, v);
+    if(length){
+        *length = c.top;
+    }
+    PUTC(&c, '\0');
+    return c.stack;
 }
 
 lept_type lept_get_type(const lept_value *v){
