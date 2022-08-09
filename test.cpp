@@ -467,6 +467,34 @@ static void test_parse(){
 }
 
 int main(){
+
+    const char* json = "{\"a\":[1,2],\"b\":3}";
+    char *out;
+    lept_value v;
+    lept_init(&v);
+    lept_parse(&v, json);
+    lept_copy(
+        lept_find_object_value(&v, "b", 1),
+        lept_find_object_value(&v, "a", 1));
+    printf("%s\n", out = lept_stringify(&v, NULL)); /* {"a":[1,2],"b":[1,2]} */
+    free(out);
+
+    lept_parse(&v, json);
+    lept_move(
+        lept_find_object_value(&v, "b", 1),
+        lept_find_object_value(&v, "a", 1));
+    printf("%s\n", out = lept_stringify(&v, NULL)); /* {"a":null,"b":[1,2]} */
+    free(out);
+
+    lept_parse(&v, json);
+    lept_swap(
+        lept_find_object_value(&v, "b", 1),
+        lept_find_object_value(&v, "a", 1));
+    printf("%s\n", out = lept_stringify(&v, NULL)); /* {"a":3,"b":[1,2]} */
+    free(out);
+
+    lept_free(&v);
+
     test_parse();
     test_stringify();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
