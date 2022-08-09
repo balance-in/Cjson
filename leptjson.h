@@ -16,7 +16,7 @@ struct lept_value
     //匿名结构体和联合体
     union {
         struct {char *s; size_t len;};
-        struct {lept_value *e; size_t size;};
+        struct {lept_value *e; size_t size, capacity;};
         struct {lept_member *m; size_t mlen;};
         double n;
     };
@@ -83,4 +83,17 @@ const char *lept_get_object_key(const lept_value *v, size_t index);
 size_t lept_get_object_key_length(const lept_value *v, size_t index);
 lept_value *lept_get_object_value(const lept_value *v, size_t index);
 
+//call
+#define LEPT_KEY_NOT_EXIST ((size_t) - 1)
+
+size_t lept_find_object_index(const lept_value *v, const char *key, size_t klen);
+lept_value *lept_find_object_value(const lept_value *v, const char *key, size_t klen);
+int lept_is_equal(const lept_value *lhs, const lept_value *rhs);
+
+//copy, move, swap
+
+lept_value *lept_set_object_value(lept_value *v, const char *key, size_t klen);
+void lept_copy(lept_value *dst, const lept_value *src);
+void lept_move(lept_value *dst, lept_value *src);
+void lept_swap(lept_value *lhs, lept_value *rhs);
 #endif

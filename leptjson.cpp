@@ -509,3 +509,73 @@ lept_value *lept_get_object_value(const lept_value *v, size_t index){
     assert(index < v->mlen);
     return &(v->m[index].v);
 }
+
+size_t lept_find_object_index(const lept_value *v, const char *key, size_t klen){
+    assert(v != NULL && v->type == LEPT_OBJECT && key != NULL);
+    for (size_t i = 0; i < v->size; i++){
+        if (v->m[i].klen == klen && memcpy(v->m[i].k, key, klen) == 0){
+            return i;
+        }
+    }
+    return LEPT_KEY_NOT_EXIST;
+}
+
+lept_value *lept_find_object_value(const lept_value *v, const char *key, size_t klen){
+    size_t index = lept_find_object_index(v, key, klen);
+    return index != LEPT_KEY_NOT_EXIST ? &v->m[index].v : NULL;
+}
+
+int lept_is_equal(const lept_value *lhs, const lept_value *rhs){
+    assert(lhs != NULL & rhs != NULL);
+    if (lhs->type != rhs->type){
+        return 0;
+    }
+    switch (lhs->type)
+    {
+        case LEPT_STRING: return lhs->len == rhs->len && memcpy(lhs->s, rhs->s, lhs->len) == 0;
+        case LEPT_NUMBER: return lhs->n == rhs->n;
+        case LEPT_ARRAY: 
+            if (lhs->size != rhs->size) return 0;
+            for (size_t i = 0; i < lhs->size; i++){
+                if (!lept_is_equal(&lhs->e[i], &rhs->e[i])) return 0;
+            }
+            return 1;
+        case LEPT_OBJECT:
+
+        default:
+            return 1;
+    }
+}
+void lept_copy(lept_value *dst, const lept_value *src){
+    assert(src != NULL && dst != NULL && src != dst);
+    switch (src->type){
+        case LEPT_STRING:
+            lept_set_string(dst, src->s, src->len);
+            break;
+        case LEPT_ARRAY:
+
+            break;
+        case LEPT_OBJECT:
+
+            break;
+        default:
+            lept_free(dst);
+            memcpy(dst, src, sizeof(lept_value));
+            break;
+    }
+}
+void lept_move(lept_value *dst, lept_value *src){
+    assert(dst != NULL && src != NULL && src != dst);
+    lept_free(dst);
+    memcpy(dst, src, sizeof(lept_value));
+    lept_free(src);
+}
+void lept_swap(lept_value *lhs, lept_value *rhs){
+    assert(lhs != NULL && rhs != NULL);
+    if (lhs != rhs){
+        lept_value temp;
+        memcpy(&temp, lhs, sizeof(lept_value));
+        memcpy(lhs, rhs, sizeof(lept_value));
+        memcpy(rhs, &temp, sizeof(lept_value));
+    }
+}
