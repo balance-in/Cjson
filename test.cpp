@@ -450,6 +450,20 @@ static void test_copy() {
     lept_free(&v2);
 }
 
+static void test_move() {
+    lept_value v1, v2, v3;
+    lept_init(&v1);
+    lept_parse(&v1, "{\"t\":true,\"f\":false,\"n\":null,\"d\":1.5,\"a\":[1,2,3]}");
+    lept_init(&v2);
+    lept_copy(&v2, &v1);
+    lept_init(&v3);
+    lept_move(&v3, &v2);
+    EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v2));
+    EXPECT_TRUE(lept_is_equal(&v3, &v1));
+    lept_free(&v1);
+    lept_free(&v2);
+    lept_free(&v3);
+}
 
 static void test_parse(){
     test_parse_null();
@@ -507,6 +521,7 @@ int main(){
 
     test_parse();
     test_copy();
+    test_move();
     test_stringify();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
