@@ -16,8 +16,8 @@ struct lept_value
     //匿名结构体和联合体
     union {
         struct {char *s; size_t len;};
-        struct {lept_value *e; size_t size, capacity;};
-        struct {lept_member *m; size_t mlen;};
+        struct {lept_value *e; size_t size, e_capacity;};
+        struct {lept_member *m; size_t mlen, m_capacity;};
         double n;
     };
     // double n;
@@ -82,7 +82,6 @@ size_t lept_get_array_capacity(const lept_value *v);
 void lept_shrink_array(lept_value *v);
 lept_value *lept_pushback_array_element(lept_value *v);
 void lept_popback_array_element(lept_value *v);
-//todo
 lept_value *lept_insert_array_element(lept_value *v, size_t index);
 void lept_erase_array_element(lept_value *v, size_t index, size_t count);
 void lept_clear_array(lept_value *v);
