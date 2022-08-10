@@ -177,9 +177,7 @@ static int lept_parse_array(lept_context *c, lept_value *v){
     lept_parse_whitespace(c);
     if (*c->json == ']'){
         c->json++;
-        v->type = LEPT_ARRAY;
-        v->size = 0;
-        v->e = NULL;
+        lept_set_array(v, size);
         return LEPT_PARSE_OK;
     }
     for(;;){
@@ -195,10 +193,9 @@ static int lept_parse_array(lept_context *c, lept_value *v){
         if (*c->json == ',') c->json++;
         else if (*c->json == ']'){
             c->json++;
-            v->type = LEPT_ARRAY;
+            lept_set_array(v, size);
+            memcpy(v->e, lept_context_pop(c, size * sizeof(lept_value)), size * sizeof(lept_value));
             v->size = size;
-            size = size * sizeof(lept_value);
-            memcpy(v->e = (lept_value*)malloc(size), lept_context_pop(c, size), size);
             return LEPT_PARSE_OK;
         }
         else {
@@ -500,7 +497,7 @@ size_t lept_get_array_capacity(const lept_value *v){
 }
 void lept_reserve_array(lept_value *v, size_t capacity){
     assert(v != NULL && v->type == LEPT_ARRAY);
-    if (v->capacity < v->size){
+    if (v->capacity < capacity){
         v->capacity = capacity;
         v->e = (lept_value*)realloc(v->e, capacity * sizeof(lept_value));
     }
@@ -517,14 +514,43 @@ lept_value *lept_pushback_array_element(lept_value *v){
     if (v->size == v->capacity){
         lept_reserve_array(v, v->capacity == 0 ? 1 : v->capacity * 2);
     }
-    lept_init(&v->e[--v->size]);
+    lept_init(&v->e[v->size]);
+    return &v->e[v->size++];
 }
 void lept_popback_array_element(lept_value *v){
     assert(v != NULL && v->type == LEPT_ARRAY && v->size > 0);
     lept_free(&v->e[--v->size]);
 }
 lept_value *lept_insert_array_element(lept_value *v, size_t index){
-    
+    assert(v != NULL && v->type == LEPT_ARRAY && index <= v->size);
+    lept_value *end = lept_pushback_array_element(v);
+    if (index == v->size) return end;
+    else{
+        for (size_t i = v->size; i > index; i--){
+            lept_move(&v->e[i], &v->e[i-1]);
+        }
+        return &v->e[index];
+    }
+}
+void lept_erase_array_element(lept_value *v, size_t index, size_t count){
+    assert(v != NULL && v->type == LEPT_ARRAY && index + count <= v->size);
+    size_t end = index + count;
+    for (size_t i = 0; i < count; i++){
+        lept_free(&v->e[index + i]);
+    }
+    if (end < v->size){
+        for (size_t i = end, j = 0; i < v->size; i++, j++){
+            lept_move(&v->e[j], &v->e[i]);
+        }
+    }
+    v->size = v->size - count;
+}
+void lept_clear_array(lept_value *v){
+    assert(v != NULL && v->type == LEPT_ARRAY);
+    for (size_t i = 0; i < v->size; i++){
+        lept_free(&v->e[i]);
+    }
+    v->size = 0;
 }
 lept_value *lept_get_array_element(const lept_value *v, size_t index){
     assert(v != NULL && v->type == LEPT_ARRAY);
@@ -550,7 +576,6 @@ lept_value *lept_get_object_value(const lept_value *v, size_t index){
     assert(index < v->mlen);
     return &(v->m[index].v);
 }
-
 size_t lept_find_object_index(const lept_value *v, const char *key, size_t klen){
     assert(v != NULL && v->type == LEPT_OBJECT && key != NULL);
     for (size_t i = 0; i < v->size; i++){

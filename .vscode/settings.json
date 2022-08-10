@@ -30,7 +30,9 @@
         "numeric": "cpp",
         "atomic": "cpp",
         "functional": "cpp",
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "bitset": "cpp",
+        "utility": "cpp"
     },
     "editor.quickSuggestionsDelay": 0
 }
