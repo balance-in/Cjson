@@ -573,7 +573,7 @@ int lept_is_equal(const lept_value *lhs, const lept_value *rhs){
     }
     switch (lhs->type)
     {
-        case LEPT_STRING: return lhs->len == rhs->len && memcpy(lhs->s, rhs->s, lhs->len) == 0;
+        case LEPT_STRING: return lhs->len == rhs->len && memcmp(lhs->s, rhs->s, lhs->len) == 0;
         case LEPT_NUMBER: return lhs->n == rhs->n;
         case LEPT_ARRAY: 
             if (lhs->size != rhs->size) return 0;
