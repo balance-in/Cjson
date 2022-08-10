@@ -559,7 +559,7 @@ static void test_access_array() {
         EXPECT_EQ_DOUBLE((double)i + 2, lept_get_number(lept_get_array_element(&a, i)));
 #endif
 
-#if 0
+#if 1
     for (i = 0; i < 2; i++) {
         lept_init(&e);
         lept_set_number(&e, i);
@@ -568,7 +568,7 @@ static void test_access_array() {
     }
 #endif
     
-#if 0
+#if 1
     EXPECT_EQ_SIZE_T(8, lept_get_array_size(&a));
     for (i = 0; i < 8; i++)
         EXPECT_EQ_DOUBLE((double)i, lept_get_number(lept_get_array_element(&a, i)));

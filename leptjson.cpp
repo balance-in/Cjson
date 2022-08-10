@@ -535,12 +535,14 @@ lept_value *lept_insert_array_element(lept_value *v, size_t index){
 void lept_erase_array_element(lept_value *v, size_t index, size_t count){
     assert(v != NULL && v->type == LEPT_ARRAY && index + count <= v->size);
     size_t end = index + count;
-    for (size_t i = 0; i < count; i++){
-        lept_free(&v->e[index + i]);
-    }
-    if (end < v->size){
-        for (size_t i = end, j = 0; i < v->size; i++, j++){
-            lept_move(&v->e[j], &v->e[i]);
+    if (count > 0){
+        for (size_t i = 0; i < count; i++){
+            lept_free(&v->e[index + i]);
+        }
+        if (end < v->size){
+            for (size_t i = end, j = index; i < v->size; i++, j++){
+                lept_move(&v->e[j], &v->e[i]);
+            }
         }
     }
     v->size = v->size - count;
