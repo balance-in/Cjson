@@ -465,6 +465,19 @@ static void test_move() {
     lept_free(&v3);
 }
 
+static void test_swap() {
+    lept_value v1, v2;
+    lept_init(&v1);
+    lept_init(&v2);
+    lept_set_string(&v1, "Hello",  5);
+    lept_set_string(&v2, "World!", 6);
+    lept_swap(&v1, &v2);
+    EXPECT_EQ_STRING("World!", lept_get_string(&v1), lept_get_string_length(&v1));
+    EXPECT_EQ_STRING("Hello",  lept_get_string(&v2), lept_get_string_length(&v2));
+    lept_free(&v1);
+    lept_free(&v2);
+}
+
 static void test_parse(){
     test_parse_null();
     test_parse_true();
@@ -522,6 +535,7 @@ int main(){
     test_parse();
     test_copy();
     test_move();
+    test_swap();
     test_stringify();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
