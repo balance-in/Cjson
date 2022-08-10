@@ -19,6 +19,7 @@ typedef struct{
 
 static int lept_parse_value(lept_context *c, lept_value *v);//前向声明
 
+
 #ifndef LEPT_PARSE_STACK_INIT_SIZE
 #define LEPT_PARSE_STACK_INIT_SIZE 256
 #endif
@@ -553,7 +554,7 @@ lept_value *lept_get_object_value(const lept_value *v, size_t index){
 size_t lept_find_object_index(const lept_value *v, const char *key, size_t klen){
     assert(v != NULL && v->type == LEPT_OBJECT && key != NULL);
     for (size_t i = 0; i < v->size; i++){
-        if (v->m[i].klen == klen && memcpy(v->m[i].k, key, klen) == 0){
+        if (v->m[i].klen == klen && memcmp(v->m[i].k, key, klen) == 0){
             return i;
         }
     }
@@ -581,7 +582,12 @@ int lept_is_equal(const lept_value *lhs, const lept_value *rhs){
             }
             return 1;
         case LEPT_OBJECT:
-
+            if (lhs->mlen != rhs->mlen) return 0;
+            for (size_t i = 0; i < lhs->mlen; i++){
+                size_t index = lept_find_object_index(rhs, lhs->m[i].k, lhs->m[i].klen);
+                if (index == LEPT_KEY_NOT_EXIST) return 0;
+                if (!lept_is_equal(lept_get_object_value(rhs, index), &lhs->m[i].v)) return 0;
+            }
         default:
             return 1;
     }
@@ -593,10 +599,25 @@ void lept_copy(lept_value *dst, const lept_value *src){
             lept_set_string(dst, src->s, src->len);
             break;
         case LEPT_ARRAY:
-
+            lept_free(dst);
+            dst->e = (lept_value*)malloc(src->size * sizeof(lept_value));
+            for (size_t i = 0; i < src->size; i++){
+                lept_copy(&dst->e[i], &src->e[i]);
+            }
+            dst->size = src->size;
+            dst->type = LEPT_ARRAY;
             break;
         case LEPT_OBJECT:
-
+            lept_free(dst);
+            dst->m = (lept_member*)malloc(src->mlen * sizeof(lept_member));
+            for (size_t i = 0; i < src->mlen; i++){
+                dst->m[i].k = (char *)malloc(src->m[i].klen);
+                dst->m[i].klen = src->m[i].klen;
+                memcpy(dst->m[i].k, src->m[i].k, src->m[i].klen);
+                lept_copy(&dst->m[i].v, &src->m[i].v);
+            }
+            dst->mlen = src->mlen;
+            dst->type = LEPT_OBJECT;
             break;
         default:
             lept_free(dst);
@@ -608,7 +629,7 @@ void lept_move(lept_value *dst, lept_value *src){
     assert(dst != NULL && src != NULL && src != dst);
     lept_free(dst);
     memcpy(dst, src, sizeof(lept_value));
-    lept_free(src);
+    lept_init(src);
 }
 void lept_swap(lept_value *lhs, lept_value *rhs){
     assert(lhs != NULL && rhs != NULL);
