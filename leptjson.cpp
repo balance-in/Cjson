@@ -620,6 +620,7 @@ void lept_clear_object(lept_value* v){
         free(v->m[i].k);
         lept_free(&v->m[i].v);
     }
+    v->mlen = 0;
 }
 lept_value* lept_set_object_value(lept_value* v, const char* key, size_t klen){
     assert(v != NULL && v->type == LEPT_OBJECT);
@@ -631,6 +632,7 @@ lept_value* lept_set_object_value(lept_value* v, const char* key, size_t klen){
         lept_init(&v->m[v->mlen].v);
         v->m[v->mlen].k = (char *)malloc(klen);
         memcpy(v->m[v->mlen].k, key, klen);
+        v->m[v->mlen].klen = klen;
         return &v->m[v->mlen++].v;
     }
     return &v->m[index].v;

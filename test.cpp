@@ -324,6 +324,15 @@ static void test_access_number(){
     EXPECT_EQ_INT(20, lept_get_number(&v));
 }
 
+static void test_access_null(){
+    lept_value v;
+    lept_init(&v);
+    lept_set_string(&v, "a", 1);
+    lept_set_null(&v);
+    EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v));
+    lept_free(&v);
+}
+
 static void test_parse_invalid_unicode_hex() {
     TEST_ERROR(LEPT_PARSE_INVALID_UNICODE_HEX, "\"\\u\"");
     TEST_ERROR(LEPT_PARSE_INVALID_UNICODE_HEX, "\"\\u0\"");
@@ -680,9 +689,6 @@ static void test_parse(){
     test_parse_root_not_singular();
     test_parse_number();
     test_parse_number_too_big();
-    test_access_string();
-    test_access_boolean();
-    test_access_number();
     test_parse_invalid_string_escape();
     test_parse_invalid_string_char();
     test_parse_invalid_unicode_hex();
@@ -693,6 +699,14 @@ static void test_parse(){
     test_parse_miss_comma_or_curly_bracket();
 }
 
+static void test_access(){
+    test_access_array();
+    test_access_object();
+    test_access_string();
+    test_access_boolean();
+    test_access_number();
+    test_access_null();
+}
 int main(){
 
     const char* json = "{\"a\":[1,2],\"b\":3}";
@@ -727,8 +741,7 @@ int main(){
     test_move();
     test_swap();
     test_equal();
-    test_access_array();
-    test_access_object();
+    test_access();
     test_stringify();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
