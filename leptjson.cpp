@@ -252,7 +252,7 @@ static int lept_parse_object(lept_context *c, lept_value *v){
     lept_parse_whitespace(c);
     if (*c->json == '}'){
         c->json++;
-        lept_set_object(v, size);
+        lept_set_object(v, 0);
         return LEPT_PARSE_OK;
     }
     m.k = NULL;
@@ -333,7 +333,7 @@ int lept_parse(lept_value *v, const char *json){
     c.json = json;
     c.stack = NULL;
     c.size = c.top = 0;
-    v->type = LEPT_NULL;
+    lept_free(v);
     lept_parse_whitespace(&c);
     if ((res = lept_parse_value(&c, v)) == LEPT_PARSE_OK){
         lept_parse_whitespace(&c);
@@ -484,7 +484,7 @@ void lept_set_array(lept_value *v, size_t capacity){
     assert(v != NULL);
     lept_free(v);
     v->type = LEPT_ARRAY;
-    v->mlen = 0;
+    v->size = 0;
     v->e_capacity = capacity;
     v->e = capacity > 0 ? (lept_value*)malloc(capacity * sizeof(lept_value)) : NULL;
 }
@@ -639,6 +639,8 @@ lept_value* lept_set_object_value(lept_value* v, const char* key, size_t klen){
 }
 void lept_remove_object_value(lept_value* v, size_t index){
     assert(v != NULL && v->type == LEPT_OBJECT && index < v->mlen);
+    free(v->m[index].k);
+    lept_free(&v->m[index].v);
     for (size_t i = index; i < v->mlen; i++){
         memcpy(&v->m[i], &v->m[i+1], sizeof(lept_member));
         v->m[i+1].k = NULL;
